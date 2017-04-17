@@ -120,7 +120,8 @@
 					markers[key] = new google.maps.Marker({
 						position: myLatLng,
 						map: map,
-						title: myObj[key].Title
+						title: myObj[key].Title +" - "+ myObj[key].Time,
+						icon: myObj[key].Image
 					});
 				//DEBUG
 				console.log(markers);

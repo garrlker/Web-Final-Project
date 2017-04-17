@@ -16,7 +16,9 @@ if ($conn->connect_error) {
 	foreach ($sql as $user) {
     echo "{\"Title\":\"$user[Username]\",
 		 \"latitude\":\"$user[Lat]\",
-    	 \"longitude\":\"$user[Log]\"";
+    	 \"longitude\":\"$user[Log]\",
+	 \"Image\":\"$user[Image]\",
+	 \"Time\":\"$user[Time]\"";
 	echo '}';
 		if(($start+1)<$total['total']){
 			echo ",";
