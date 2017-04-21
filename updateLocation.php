@@ -26,7 +26,7 @@ if(isset($_POST['submit'])){
 	//echo $lat;
 	//echo $long;
 	//echo $imageURL;
-
+	//echo "INSERT INTO geolocate (Username, FullName, Lat, Log, Image) VALUES  ('$username','$fullname','$lat','$long','$imageURL')";
 
 	if($username!='NULL'){
 		mysqli_query($conn,"DELETE FROM geolocate WHERE Username='$username'");
