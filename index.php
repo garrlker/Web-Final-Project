@@ -23,7 +23,8 @@ if ($conn->connect_error) {
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
 	<script src="https://apis.google.com/js/platform.js" async defer></script>
 
-    <style>
+	<!-- Style -->
+	<style>
 	/* Always set the map height explicitly to define the size of the div element that contains the map. */
 	#map {
 		height: 50%;
@@ -35,26 +36,61 @@ if ($conn->connect_error) {
 		margin: 0;
 		padding: 0;
 	}
+	* { 
+		margin: 0; 
+		padding: 0; 
+		box-sizing: border-box; 
+	}
+	body { 
+		font: 13px Helvetica, Arial; 
+	}
+	form.Chat { 
+		background: #0C030F;
+		border-radius: 10px;
+		border: 1px solid #000000;
+		margin: 5px;
+		float: right;
+		width:800px;
+	}
+	form input.Chat { 
+		border: 0; 
+		padding: 10px;
+		float: right;
+		width:800px;
+	} 
+	button.Chat { 
+		width: 9%; 
+		background: rgb(130, 224, 255); 
+		border: none; 
+		padding: 10px; 
+	}
+	#messages { 
+		list-style-type: none; 
+		margin: 0; 
+		padding: 0; 
+	}
+	#messages li { 
+		padding: 5px 10px; 
+	}
+	#messages li:nth-child(odd) { 
+		background: #eee; 
+	}
+	#messages { 
+		margin-bottom: 40px 
+	}
     </style>
-
 
   </head>
   	<body>
+    	<!-- Signin button, then map, then chat-->
     	<div class="g-signin2" data-onsuccess="onSignIn" data-theme="dark"></div>
-    	<div id="map"></div>
-    	<script>
-      		function onSignIn(googleUser) {
-        		// Useful data for your client-side scripts:
-        		var profile = googleUser.getBasicProfile();
-        		document.getElementById("Namefield").value = profile.getName();
-        		document.getElementById("Imagefield").value = profile.getImageUrl();
-        		document.getElementById("Userfield").value = profile.getEmail();
+    	<div id="map"></div> 
+    	<ul id="messages"></ul>
+	<form name="ChatForm" class="Chat" action="">
+     		<input id="m" autocomplete="off" />
+		<button type="submit" class="Chat">Send</button>
+    	</form>
 
-        		// The ID token you need to pass to your backend:
-        		var id_token = googleUser.getAuthResponse().id_token;
-        		console.log("ID Token: " + id_token);
-      		};
-    	</script>
 
 		<form action="/~garbwalk/geolocation/Web-Final-Project/updateLocation.php" method="post">
 			<input type="hidden" id="Userfield" name="Username" value="NULL">
@@ -82,8 +118,52 @@ if ($conn->connect_error) {
 		?>
 
 		
-		
+		<script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+		<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
     	<script>
+    	//SocketIO ala Chat
+		//On submit, append text field to FullName hidden field and send
+		$(function () {
+			var socket = io("https://secret-chamber-75151.herokuapp.com/");
+			$('form[name="ChatForm"]').submit(function(){
+			socket.emit('chat message', $('#Namefield').val() + ": " + $('#m').val());
+			$('#m').val('');
+			return false;
+		});
+		//When we recieve a message, parse if link and output
+		socket.on('chat message', function(msg){
+			var message = msg;
+			//console.log(message);
+			if (message.indexOf('http://')>=0 || message.indexOf('https://')>=0){
+				message = '<li><a href=\"' + message.split(" ")[2] + '\">' + message +'</a>';
+			}else{
+				message = '<li>' + message;
+			}
+
+			$('#messages').append(message);
+			//$('#messages').append($('<li>').text(msg));
+			});
+		});
+
+		//If http, redirect to https
+		var loc = window.location.href+'';
+		if (loc.indexOf('http://')==0){
+			window.location.href = loc.replace('http://','https://');
+		}
+
+
+		//On Google Account Sign In
+		function onSignIn(googleUser) {
+			// Useful data for your client-side scripts:
+			var profile = googleUser.getBasicProfile();
+			document.getElementById("Namefield").value = profile.getName();
+			document.getElementById("Imagefield").value = profile.getImageUrl();
+			document.getElementById("Userfield").value = profile.getEmail();
+			// The ID token you need to pass to your backend:
+			var id_token = googleUser.getAuthResponse().id_token;
+			console.log("ID Token: " + id_token);
+		};
+
 		// Note: This example requires that you consent to location sharing when
 		// prompted by your browser. If you see the error "The Geolocation service
 		// failed.", it means you probably did not give permission for the browser to
