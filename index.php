@@ -27,6 +27,7 @@ if ($conn->connect_error) {
 	<style>
 	/* Always set the map height explicitly to define the size of the div element that contains the map. */
 	#map {
+		float: left;
 		height: 50%;
 		width:  50%;
 	}
@@ -45,12 +46,13 @@ if ($conn->connect_error) {
 		font: 13px Helvetica, Arial; 
 	}
 	form.Chat { 
+		
 		background: #0C030F;
 		border-radius: 10px;
 		border: 1px solid #000000;
 		margin: 5px;
 		float: right;
-		width:800px;
+		width:600px;
 	}
 	form input.Chat { 
 		border: 0; 
@@ -64,6 +66,8 @@ if ($conn->connect_error) {
 		border: none; 
 		padding: 10px; 
 	}
+	nav ul{height:200px; width:100%;}
+	nav ul{overflow:hidden; overflow-y:scroll;}
 	#messages { 
 		list-style-type: none; 
 		margin: 0; 
@@ -76,8 +80,14 @@ if ($conn->connect_error) {
 		background: #eee; 
 	}
 	#messages { 
-		margin-bottom: 40px 
+		margin-bottom: 40px; 
 	}
+	ul {
+		
+    		border: 4px solid gray;
+    		border-radius: 9px;
+	}
+
     </style>
 
   </head>
@@ -85,7 +95,9 @@ if ($conn->connect_error) {
     	<!-- Signin button, then map, then chat-->
     	<div class="g-signin2" data-onsuccess="onSignIn" data-theme="dark"></div>
     	<div id="map"></div> 
+	<nav>
     	<ul id="messages"></ul>
+	</nav>
 	<form name="ChatForm" class="Chat" action="">
      		<input id="m" autocomplete="off" />
 		<button type="submit" class="Chat">Send</button>
@@ -131,7 +143,8 @@ if ($conn->connect_error) {
 			return false;
 		});
 		//When we recieve a message, parse if link and output
-		socket.on('chat message', function(msg){
+		    socket.on('chat message', function(msg){ //msg.user
+			notifyMe($('#Namefield').val(), msg.comment);
 			var message = msg;
 			//console.log(message);
 			if (message.indexOf('http://')>=0 || message.indexOf('https://')>=0){
@@ -141,6 +154,8 @@ if ($conn->connect_error) {
 			}
 
 			$('#messages').append(message);
+			messages.scrollTop = messages.scrollHeight;
+			document.documentElement.scrollTop = document.body.scrollTop = 10;
 			//$('#messages').append($('<li>').text(msg));
 			});
 		});
@@ -151,6 +166,40 @@ if ($conn->connect_error) {
 			window.location.href = loc.replace('http://','https://');
 		}
 
+
+		//notifiyng user of chat
+		function notifyMe(user,message) {
+		// Let's check if the browser supports notifications
+	    if (!("Notification" in window)) {
+		  alert("This browser does not support desktop notification");
+	    }
+	  // Let's check if the user is okay to get some notification
+	  else if (Notification.permission === "granted") {
+		// If it's okay let's create a notification
+	  var options = {
+			body: message,
+			dir : "ltr"
+		};
+	  var notification = new Notification(user + " Posted a comment",options);
+	  }
+	  // Otherwise, we need to ask the user for permission
+	  else if (Notification.permission !== 'denied') {
+		Notification.requestPermission(function (permission) {
+		  // Whatever the user answers, we make sure we store the information
+		  if (!('permission' in Notification)) {
+			Notification.permission = permission;
+		  }
+		  // If the user is okay, let's create a notification
+		  if (permission === "granted") {
+			var options = {
+					body: message,
+					dir : "ltr"
+			};
+			var notification = new Notification(user + " Posted a comment",options);
+		  }
+		});
+	  }
+	}
 
 		//On Google Account Sign In
 		function onSignIn(googleUser) {
@@ -258,4 +307,3 @@ if ($conn->connect_error) {
     </script>
   </body>
 </html>
-
